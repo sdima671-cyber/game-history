@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тропа игровой истории · природная тропа</title>
+  <!-- Google Fonts: Inter + Playfair Display -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome (минимум) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Общий стиль -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header style="display: flex; justify-content: space-between; align-items: flex-end;">
+      <div>
+        <h1>Тропа игровой<br>истории</h1>
+        <div class="sub">прогулка сквозь десятилетия</div>
+      </div>
+      <span style="font-size: 2.2rem; color: #a3b5a0;">🌿</span>
+    </header>
+
+    <!-- ДОРОГА-ЗМЕЙКА (ИЗВИЛИСТАЯ ТРОПА) -->
+    <div class="timeline-path" id="trailContainer">
+      <svg class="path-svg" id="trailSvg"></svg>
+      <div class="markers-layer" id="markerLayer"></div>
+    </div>
+
+    <footer style="text-align: center; color: #7d927d; margin-top: 1.5rem;">
+      <span>нажми на камень — узнай историю десятилетия</span>
+    </footer>
+  </div>
+
+  <script>
+    // ---------------------------------------------
+    // ДАННЫЕ ДЕСЯТИЛЕТИЙ (краткая выжимка + ссылка)
+    // ---------------------------------------------
+    const decades = [
+      {
+        label: '1970‑е',
+        year: '1970–1979',
+        hint: '⚡ Pong, Atari 2600. Рождение индустрии.',
+        link: 'pages/1970s.html',
+        pos: { left: '10%', top: '25%' }
+      },
+      {
+        label: '1980‑е',
+        year: '1980–1989',
+        hint: '👾 Кризис, NES, Pac‑Man. Восстание Nintendo.',
+        link: 'pages/1980s.html',
+        pos: { left: '70%', top: '20%' }
+      },
+      {
+        label: '1990‑е',
+        year: '1990–1999',
+        hint: '🎮 3D, PlayStation, Doom. Эра CD-ROM.',
+        link: 'pages/1990s.html',
+        pos: { left: '25%', top: '55%' }
+      },
+      {
+        label: '2000‑е',
+        year: '2000–2009',
+        hint: '🌐 Xbox, Steam, WoW. Онлайн-революция.',
+        link: 'pages/2000s.html',
+        pos: { left: '80%', top: '65%' }
+      },
+      {
+        label: '2010‑е',
+        year: '2010–2019',
+        hint: '📱 Minecraft, Fortnite, VR, киберспорт.',
+        link: 'pages/2010s.html',
+        pos: { left: '35%', top: '80%' }
+      },
+      {
+        label: '2020‑е',
+        year: '2020–2029',
+        hint: '☁️ Облака, метавселенные, ИИ, Steam Deck.',
+        link: 'pages/2020s.html',
+        pos: { left: '60%', top: '45%' }
+      }
+    ];
+
+    const markerLayer = document.getElementById('markerLayer');
+    const svg = document.getElementById('trailSvg');
+
+    // Рисуем точки
+    function buildMarkers() {
+      markerLayer.innerHTML = '';
+      decades.forEach((d) => {
+        const marker = document.createElement('div');
+        marker.className = 'trail-marker';
+        marker.style.left = d.pos.left;
+        marker.style.top = d.pos.top;
+
+        marker.innerHTML = `
+          <div class="marker-stone">${d.label.replace('‑е', '')}</div>
+          <span class="year-badge">${d.year}</span>
+          <div class="marker-hint">${d.hint}</div>
+        `;
+
+        marker.addEventListener('click', () => {
+          window.location.href = d.link;
+        });
+
+        markerLayer.appendChild(marker);
+      });
+    }
+
+    // Рисуем извилистый путь (SVG)
+    function drawPath() {
+      const points = [];
+      document.querySelectorAll('.trail-marker').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const parentRect = el.parentElement.getBoundingClientRect();
+        const x = rect.left + rect.width/2 - parentRect.left;
+        const y = rect.top + rect.height/2 - parentRect.top;
+        points.push({ x, y });
+      });
+
+      if (points.length < 2) return;
+
+      let pathData = `M ${points[0].x},${points[0].y}`;
+      for (let i = 1; i < points.length; i++) {
+        const prev = points[i-1];
+        const curr = points[i];
+        const cpX1 = prev.x + (curr.x - prev.x) * 0.25;
+        const cpY1 = prev.y;
+        const cpX2 = curr.x - (curr.x - prev.x) * 0.25;
+        const cpY2 = curr.y;
+        pathData += ` C ${cpX1},${cpY1} ${cpX2},${cpY2} ${curr.x},${curr.y}`;
+      }
+
+      svg.innerHTML = '';
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', pathData);
+      path.setAttribute('stroke', '#9eb09b');
+      path.setAttribute('stroke-width', '5');
+      path.setAttribute('stroke-dasharray', '12 12');
+      path.setAttribute('fill', 'none');
+      svg.appendChild(path);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      buildMarkers();
+      setTimeout(drawPath, 60); // ждём рендеринга
+    });
+
+    window.addEventListener('resize', drawPath);
+  </script>
+</body>
+</html>
